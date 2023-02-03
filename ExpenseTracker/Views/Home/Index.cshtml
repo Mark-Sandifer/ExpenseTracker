@@ -1,0 +1,89 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <button id="showChartButton" style="margin: 10px;">All Expenses</button>
+    <br />
+    <canvas id="myChart" style="max-width:400px; max-height:400px;"></canvas>
+    <br />
+    <canvas id="myWeeklyChart" style="max-width:400px; max-height:400px;"></canvas>
+</div>
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    $.ajax({
+        type: "POST",
+        url: "/Expense/GetExpenseData",
+        data: "",
+        contextType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (data) {
+            var _data = data;
+            var _chartLabels = _data[0];
+            var _chartData = _data[1];
+
+            var ringColor = ["red", "blue", "green", "purple", "cyan", "yellow", "orange"];
+
+            new Chart("myChart",
+            {
+                type: "doughnut",
+                    data: {
+                    labels: _chartLabels,
+                    datasets: [{
+                    backgroundColor: ringColor,
+                    data: _chartData
+                    }]
+               }
+            });
+        }
+    });
+
+    $.ajax({
+        type: "POST",
+        url: "/Expense/GetPastWeekData",
+        data: "",
+        contextType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (data) {
+            var _data = data;
+            var _chartLabels = _data[0];
+            var _chartData = _data[1];
+
+            var ringColor = ["red", "blue", "green", "purple", "cyan", "yellow", "orange"];
+
+            new Chart("myWeeklyChart",
+            {
+                type: "doughnut",
+                  data: {
+                        labels: _chartLabels,
+                        datasets: [{
+                        backgroundColor: ringColor,
+                        data: _chartData
+                        }]
+                  }
+            });
+        }
+    });
+
+     document.getElementById("myChart").style.display = "none";
+ 
+    var chartDisplayed = false;
+    function displayChart(){
+    if(chartDisplayed)
+    {
+      document.getElementById("myChart").style.display = "none";
+      chartDisplayed = false;
+    }
+    else
+    {
+      document.getElementById("myChart").style.display = "inline";
+      chartDisplayed = true;
+    }	
+ }
+ 
+ document.getElementById("showChartButton").onclick = function(){ displayChart(); }
+</script>
