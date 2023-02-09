@@ -12,11 +12,16 @@ html {
   box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
+.expbtn, expbtn:focus, .expbtn:active:focus, .expbtn-link.nav-link:focus {
+    background-color: #6c757d;
+    color: snow;
+}
+
 html {
   position: relative;
   min-height: 100%;
 }
 
 body {
-  margin-bottom: 60px;
+    margin-bottom: 60px;
 }

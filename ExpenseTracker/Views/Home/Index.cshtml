@@ -4,12 +4,16 @@
 
 <div class="text-center">
     <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-    <button id="showChartButton" style="margin: 10px;">All Expenses</button>
-    <br />
-    <canvas id="myChart" style="max-width:400px; max-height:400px;"></canvas>
-    <br />
-    <canvas id="myWeeklyChart" style="max-width:400px; max-height:400px;"></canvas>
+    <div>
+        <button id="showAllChartButton" onclick="showhidemenu('myAllChart')" class="expbtn btn" style="margin: 10px;">All Expenses</button>
+        <button id="showWeeklyChartButton" onclick="showhidemenu('myWeeklyChart')" class="expbtn btn" style="margin: 10px;">Past Week Expenses</button>
+        <button id="showMonthlyChartButton" onclick="showhidemenu('myMonthlyChart')" class="expbtn btn" style="margin: 10px;">Past Month Expenses</button>
+    </div>
+    <canvas id="myAllChart" style="max-width:400px; max-height:400px; display:none"></canvas>
+
+    <canvas id="myWeeklyChart" style="max-width:400px; max-height:400px; display:none"></canvas>
+
+    <canvas id="myMonthlyChart" style="max-width:400px; max-height:400px; display:none"></canvas>
 </div>
 
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
@@ -17,7 +21,7 @@
 <script>
     $.ajax({
         type: "POST",
-        url: "/Expense/GetExpenseData",
+        url: "/Home/GetExpenseData",
         data: "",
         contextType: "application/json; charset=utf-8",
         dataType: "json",
@@ -28,23 +32,35 @@
 
             var ringColor = ["red", "blue", "green", "purple", "cyan", "yellow", "orange"];
 
-            new Chart("myChart",
-            {
-                type: "doughnut",
+            new Chart("myAllChart",
+                {
+                    type: "doughnut",
                     data: {
-                    labels: _chartLabels,
-                    datasets: [{
-                    backgroundColor: ringColor,
-                    data: _chartData
-                    }]
-               }
+                        labels: _chartLabels,
+                        datasets: [{
+                            backgroundColor: ringColor,
+                            data: _chartData,
+                        }]
+                    },
+                    options: {
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'All Expenses',
+                                padding: {
+                                    top: 10,
+                                    bottom: 30
+                                }
+                            }
+                        }
+                    }
             });
         }
     });
 
     $.ajax({
         type: "POST",
-        url: "/Expense/GetPastWeekData",
+        url: "/Home/GetExpenseData?type=week&length=1",
         data: "",
         contextType: "application/json; charset=utf-8",
         dataType: "json",
@@ -56,34 +72,77 @@
             var ringColor = ["red", "blue", "green", "purple", "cyan", "yellow", "orange"];
 
             new Chart("myWeeklyChart",
-            {
-                type: "doughnut",
-                  data: {
+                {
+                    type: "doughnut",
+                    data: {
                         labels: _chartLabels,
                         datasets: [{
-                        backgroundColor: ringColor,
-                        data: _chartData
+                            backgroundColor: ringColor,
+                            data: _chartData
                         }]
-                  }
+                    },
+                    options: {
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Past Week Expenses',
+                                padding: {
+                                    top: 10,
+                                    bottom: 30
+                                }
+                            }
+                        }
+                    }
             });
         }
     });
 
-     document.getElementById("myChart").style.display = "none";
- 
-    var chartDisplayed = false;
-    function displayChart(){
-    if(chartDisplayed)
-    {
-      document.getElementById("myChart").style.display = "none";
-      chartDisplayed = false;
+    $.ajax({
+        type: "POST",
+        url: "/Home/GetExpenseData?type=month&length=1",
+        data: "",
+        contextType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (data) {
+            var _data = data;
+            var _chartLabels = _data[0];
+            var _chartData = _data[1];
+
+            var ringColor = ["red", "blue", "green", "purple", "cyan", "yellow", "orange"];
+
+            new Chart("myMonthlyChart",
+                {
+                    type: "doughnut",
+                    data: {
+                        labels: _chartLabels,
+                        datasets: [{
+                            backgroundColor: ringColor,
+                            data: _chartData
+                        }]
+                    },
+                    options: {
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Past Month Expenses',
+                                padding: {
+                                    top: 10,
+                                    bottom: 30
+                                }
+                            }
+                        }
+                    }
+            });
+        }
+    });
+
+    
+    function showhidemenu(button) {
+        var x = document.getElementById(button);
+        if (x.style.display === "none" || x.style.display === "") {
+            x.style.display = "inline";
+        } else {
+            x.style.display = "none";
+        }
     }
-    else
-    {
-      document.getElementById("myChart").style.display = "inline";
-      chartDisplayed = true;
-    }	
- }
- 
- document.getElementById("showChartButton").onclick = function(){ displayChart(); }
 </script>
