@@ -4,21 +4,48 @@
 
 <div class="text-center">
     <h1 class="display-4">Welcome</h1>
-    <div>
+    <div class="text-center div-box">
         <button id="showAllChartButton" onclick="showhidemenu('myAllChart')" class="expbtn btn" style="margin: 10px;">All Expenses</button>
         <button id="showWeeklyChartButton" onclick="showhidemenu('myWeeklyChart')" class="expbtn btn" style="margin: 10px;">Past Week Expenses</button>
         <button id="showMonthlyChartButton" onclick="showhidemenu('myMonthlyChart')" class="expbtn btn" style="margin: 10px;">Past Month Expenses</button>
+        <br />
+        <canvas id="myAllChart" style="max-width:400px; max-height:400px; display:none"></canvas>
+
+        <canvas id="myWeeklyChart" style="max-width:400px; max-height:400px; display:none"></canvas>
+
+        <canvas id="myMonthlyChart" style="max-width:400px; max-height:400px; display:none"></canvas>
     </div>
-    <canvas id="myAllChart" style="max-width:400px; max-height:400px; display:none"></canvas>
-
-    <canvas id="myWeeklyChart" style="max-width:400px; max-height:400px; display:none"></canvas>
-
-    <canvas id="myMonthlyChart" style="max-width:400px; max-height:400px; display:none"></canvas>
+    <div class="div-box2">
+        <canvas class="chart" id="CategoryAmount" width="400" height="400"></canvas>
+    </div>
 </div>
 
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+    Chart.defaults.color = '#000';
+    
+    Chart.register({
+        id: 'data_check',
+        afterDraw: (chart, args, options) => {
+            const data = chart.data.datasets[0].data;
+            if (data.length === 0) {
+                const current = chart.ctx;
+                const width = chart.width;
+                const height = chart.height;
+                chart.clear();
+
+                current.save();
+                current.textAlign = 'center';
+                current.textBaseline = 'middle';
+                current.font = "900 24px Helvetica Nueue";
+                current.fillText(chart.options.plugins.title.text, width / 2, 25);
+                current.fillText('No Data Available', width / 2, height / 2);
+                current.restore();
+            }
+        }
+    });
+
     $.ajax({
         type: "POST",
         url: "/Home/GetExpenseData",
@@ -50,6 +77,11 @@
                                 padding: {
                                     top: 10,
                                     bottom: 30
+                                },
+                                font: {
+                                    size: '24',
+                                    style: 'normal',
+                                    family: 'Helvetica Neue'
                                 }
                             }
                         }
@@ -89,6 +121,11 @@
                                 padding: {
                                     top: 10,
                                     bottom: 30
+                                },
+                                font: {
+                                    size: '24',
+                                    style: 'normal',
+                                    family: 'Helvetica Neue'
                                 }
                             }
                         }
@@ -128,6 +165,11 @@
                                 padding: {
                                     top: 10,
                                     bottom: 30
+                                },
+                                font: {
+                                    size: '24',
+                                    style: 'normal',
+                                    family: 'Helvetica Neue'
                                 }
                             }
                         }
@@ -135,7 +177,47 @@
             });
         }
     });
+    $.ajax({
+        type: "POST",
+        url: "/Home/GetCategoryAmount",
+        data: "",
+        contextType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (data){
+            var _data = data;
+            var _chartLabels = _data[0];
+            var _chartData = _data[1];
 
+            new Chart("CategoryAmount", {
+                type: "bar",
+                data: {
+                    labels: _chartLabels,
+                    datasets: [{
+                        label: 'Number of Expenses',
+                        data: _chartData
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Expense Category Count',
+                            padding: {
+                                top: 10,
+                                bottom: 30
+                            },
+                            font: {
+                                size: '24',
+                                style: 'normal',
+                                family: 'Helvetica Neue'
+                            }
+                        }
+                    }
+                }
+            })
+        }
+    });
     
     function showhidemenu(button) {
         var x = document.getElementById(button);

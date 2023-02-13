@@ -2,6 +2,7 @@
 using ExpenseTracker.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace ExpenseTracker.Controllers
@@ -42,6 +43,25 @@ namespace ExpenseTracker.Controllers
                 }
                 amount.Add(total);
             }
+            data.AddRange(new object[] { labels, amount });
+            return data;
+        }
+
+        [HttpPost]
+        public List<object> GetCategoryAmount()
+        {
+            List<object> data = new List<object>();
+            List<string> labels = new List<string>();
+            List<double> amount = new List<double>();
+            IEnumerable<Expense> expenseList = _dbContext.Expenses.ToList();
+
+            var query = expenseList.GroupBy(x => x.Category).Select(y => (y.Key, y.Count()));
+            foreach (var group in query)
+            {
+                labels.Add(group.Key.ToString());
+                amount.Add(group.Item2);
+            }
+
             data.AddRange(new object[] { labels, amount });
             return data;
         }
