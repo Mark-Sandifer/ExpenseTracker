@@ -7,17 +7,8 @@ using System.Diagnostics;
 
 namespace ExpenseTracker.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController : BaseController<HomeController>
     {
-        private readonly ILogger<HomeController> _logger;
-        private readonly AppDBContext _dbContext;
-
-        public HomeController(ILogger<HomeController> logger, AppDBContext dbContext)
-        {
-            _logger = logger;
-            _dbContext = dbContext;
-        }
-
         [HttpPost]
         public List<object> GetExpenseData(string type, int? length)
         {
@@ -25,7 +16,7 @@ namespace ExpenseTracker.Controllers
             List<string> labels = new List<string>();
             List<double> amount = new List<double>();
             double total = 0;
-            IEnumerable<Expense> expenseList = _dbContext.Expenses.ToList();
+            IEnumerable<Expense> expenseList = dbContext.Expenses.ToList();
 
             if (length.HasValue && !string.IsNullOrEmpty(type))
             {
@@ -53,7 +44,7 @@ namespace ExpenseTracker.Controllers
             List<object> data = new List<object>();
             List<string> labels = new List<string>();
             List<double> amount = new List<double>();
-            IEnumerable<Expense> expenseList = _dbContext.Expenses.ToList();
+            IEnumerable<Expense> expenseList = dbContext.Expenses.ToList();
 
             var query = expenseList.GroupBy(x => x.Category).Select(y => (y.Key, y.Count()));
             foreach (var group in query)
@@ -66,20 +57,11 @@ namespace ExpenseTracker.Controllers
             return data;
         }
 
-        public IActionResult Index()
-        {
-            return View();
-        }
+        public IActionResult Index() => View();
 
-        public IActionResult Privacy()
-        {
-            return View();
-        }
+        public IActionResult Privacy() => View();
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }
+        public IActionResult Error() => View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
     }
 }

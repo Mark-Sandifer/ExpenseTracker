@@ -10,42 +10,19 @@ using System.Diagnostics;
 
 namespace ExpenseTracker.Controllers
 {
-    public class ExpenseController : Controller
+    public class ExpenseController : BaseController<ExpenseController>
     {
-        private readonly AppDBContext _context;
-        public ExpenseController(AppDBContext context)
-        {
-            _context = context;
-        }
 
         public async Task<IActionResult> Index()
         {
-              return _context.Expenses != null ? 
-                          View(await _context.Expenses.ToListAsync()) :
+              return dbContext.Expenses != null ? 
+                          View(await dbContext.Expenses.ToListAsync()) :
                           Problem("Entity set 'AppDBContext.Expenses'  is null.");
         }
 
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null || _context.Expenses == null)
-            {
-                return NotFound();
-            }
+        public async Task<IActionResult> Details(int? id) => await checkForNullAsync(id);
 
-            var expense = await _context.Expenses
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (expense == null)
-            {
-                return NotFound();
-            }
-
-            return View(expense);
-        }
-
-        public IActionResult Create()
-        {
-            return View();
-        }
+        public IActionResult Create() => View();
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -53,27 +30,15 @@ namespace ExpenseTracker.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(expense);
-                await _context.SaveChangesAsync();
+                dbContext.Add(expense);
+                await dbContext.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
             return View(expense);
         }
 
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null || _context.Expenses == null)
-            {
-                return NotFound();
-            }
+        public async Task<IActionResult> Edit(int? id) =>  await checkForNullAsync(id);
 
-            var expense = await _context.Expenses.FindAsync(id);
-            if (expense == null)
-            {
-                return NotFound();
-            }
-            return View(expense);
-        }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -88,8 +53,8 @@ namespace ExpenseTracker.Controllers
             {
                 try
                 {
-                    _context.Update(expense);
-                    await _context.SaveChangesAsync();
+                    dbContext.Update(expense);
+                    await dbContext.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -107,44 +72,26 @@ namespace ExpenseTracker.Controllers
             return View(expense);
         }
 
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null || _context.Expenses == null)
-            {
-                return NotFound();
-            }
-
-            var expense = await _context.Expenses
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (expense == null)
-            {
-                return NotFound();
-            }
-
-            return View(expense);
-        }
+        public async Task<IActionResult> Delete(int? id) => await checkForNullAsync(id);
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_context.Expenses == null)
+            if (dbContext.Expenses == null)
             {
                 return Problem("Entity set 'AppDBContext.Expenses'  is null.");
             }
-            var expense = await _context.Expenses.FindAsync(id);
+            var expense = await dbContext.Expenses.FindAsync(id);
             if (expense != null)
             {
-                _context.Expenses.Remove(expense);
+                dbContext.Expenses.Remove(expense);
             }
             
-            await _context.SaveChangesAsync();
+            await dbContext.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool ExpenseExists(int id)
-        {
-          return (_context.Expenses?.Any(e => e.Id == id)).GetValueOrDefault();
-        }
+        private bool ExpenseExists(int id) => (dbContext.Expenses?.Any(e => e.Id == id)).GetValueOrDefault(); 
     }
 }
